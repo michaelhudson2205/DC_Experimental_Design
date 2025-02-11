@@ -1,1 +1,80 @@
-## Test
+---
+title: "Chapter1"
+format: html
+---
+
+Import necessary libraries
+
+```{r}
+library(tidyverse)
+library(broom)
+```
+
+
+### A basic experiment
+
+`ToothGrowth` is a built-in R dataset from a study that examined the effect of three different doses of Vitamin C on the length of the odontoplasts, the cells responsible for teeth growth in 60 guinea pigs, where tooth length was the measured outcome variable. Let's load `ToothGrowth` into our environment, do some exploratory data analysis, and perform a `t-test` to get an idea of the purpose of a basic experiment.
+
+```{r}
+# Load the ToothGrowth dataset
+data("ToothGrowth")
+
+# View the first 6 rows of ToothGrowth
+head(ToothGrowth)
+```
+
+```{r}
+# Find mean len, median len, and standard deviation len with summarise()
+ToothGrowth |> summarise(mean(len), median(len), sd(len))
+```
+
+```{r}
+# Perform a two-sided t-test
+t.test(x = ToothGrowth$len, alternative = "two.sided", mu = 18)
+```
+
+Given the high p-value, we fail to reject the null hypothesis that the mean of `len` is equal to 18. That is, we do not have evidence that it is different from 18 micrometers.
+
+### Randomization
+
+Randomization of subjects in an experiment helps spread any variability that exists naturally between subjects evenly across groups. For `ToothGrowth`, an example of effective randomization would be randomly assigning male and female guinea pigs into different experimental groups, ideally cancelling out any existing differences that naturally exist between male and female guinea pigs.
+
+In the experiment that yielded the `ToothGrowth` dataset, guinea pigs were randomized to receive Vitamin C either through orange juice or ascorbic acid, indicated in the dataset by the `supp` variable. It is natural to wonder if there is a difference in tooth length by suuplement type - a question that a `t-test` can also answer.
+
+Starting with this exercise, you should use `t.test()` and other modelling functions with formula notation:
+
+`t.test(outcome ~ explanatory_variable, data = dataset)`
+
+This can be read: "test `outcome` by `explanatory_variable` in my `dataset`." The default test for `t.test()` is a two-sided t-test.
+
+```{r}
+# Perform a t-test
+ToothGrowth_ttest <- t.test(len ~ supp, data = ToothGrowth)
+
+# Tidy ToothGrowth_ttest with tidy() from the broom package
+tidy(ToothGrowth_ttest)
+```
+
+~~~{=comment}
+this comment will be ignored
+~~~
+
+This comes after a comment that is being ignored.
+
+### Replication
+
+Recall that replication means you need to conduct an experiment with an adequate number of subjects to achieve an acceptable statistical power. Sample size and power will be discussed in more detail in this chapter.
+
+Let's examine the `ToothGrowth` dataset to make sure they followed the principle of replication. We will use `dplyr` to do some exploratory data analysis (EDA).
+
+```{r}
+# Count number of observations for each combination of supp and dose
+ToothGrowth |> 
+  count(supp, dose)
+```
+
+The researchers seem to have tested each combination of `supp` and `dose` on 10 subjects each, which is low, but was deemed adequate for this experiment.
+
+### Blocking
+
+
