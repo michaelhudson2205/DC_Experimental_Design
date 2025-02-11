@@ -77,4 +77,4 @@ The researchers seem to have tested each combination of `supp` and `dose` on 10 
 
 ### Blocking
 
-
+Though this is not true, suppose the supplement type is actually a nuisance factor we would like to control for by blocking, and we are actually only interested in the effect of the dose of Vitamin C on guinea pig tooth growth.
