@@ -8,6 +8,7 @@ Import necessary libraries
 ```{r}
 library(tidyverse)
 library(broom)
+library(pwr)
 ```
 
 
@@ -78,3 +79,79 @@ The researchers seem to have tested each combination of `supp` and `dose` on 10 
 ### Blocking
 
 Though this is not true, suppose the supplement type is actually a nuisance factor we would like to control for by blocking, and we are actually only interested in the effect of the dose of Vitamin C on guinea pig tooth growth.
+
+If we block by supplement type, we create groups that are more similar, in that they will have the same supplement type, allowing us to examine only the effect of dose on tooth length.
+
+We will use the `aov()` function to examine this. `aov()` creates a linear regression model by calling `lm()` and examining results with `anova()` all in one function call. To use `aov()` we will still need functional notation, as with the randomization exercise, but this time the formula should be `len ~ dose + supp` to indicate we have blocked by supplement type.
+
+```{r}
+# Create a boxplot with geom_boxplot()
+ggplot(data = ToothGrowth, aes(x = as_factor(dose), y = len)) +
+  geom_boxplot()
+
+```
+
+```{r}
+# Create ToothGrowth_aov
+ToothGrowth_aov <- aov(len ~ dose + supp, data = ToothGrowth)
+
+# Examine ToothGrowth_aov with summary()
+summary(ToothGrowth_aov)
+```
+
+```{r}
+# Alternative method
+fit <- lm(len ~ dose + supp, data = ToothGrowth)
+anova(fit)
+```
+
+
+### One sided vs. Two-sided tests
+
+Recall in the first exercise that we tested to see if the mean of the guinea pigs' teeth in `ToothGrowth` was not equal to 18 micrometers. That was an example of a two-sided t-test: we wanted to see if the mean of `len` is some other number on either side of 18.
+
+We can also conduct a one-sided t-test, explicitly checking to see if the mean is less than or greater than 18. Whether to use a one- or two-sided test usually follows from your research question. Does an intervention cause longer tooth growth? One-sided, greater than. Does a drug cause the test group to lose more weight? One-sided, less than. Is there a difference in mean test scores between two groups of students? Two-sided test.
+
+```{r}
+# Less than
+t.test(x = ToothGrowth$len, alternative = "less", mu = 18)
+```
+
+```{r}
+# Greater than
+t.test(x = ToothGrowth$len, alternative = "greater", mu = 18)
+```
+
+It turns out the mean of `len` is actually very close to 18, so neither of these tests tells us much about the mean of tooth length.
+
+### Power & Sample Size Calculations
+
+One key part of designing an experiment is knowing the required sample size you will need to be able to test your hypothesis.
+
+The `pwr` package provides a handy function, `pwr.t.test()`, which will calculate that for you. However, you do need to know your desired significance level (often 0.05), if the test is one- or two-sided, if the data is from one sample, two samples, or paired, the effect size, and the power. Some of this information will be given to you or can be reasoned from the design.
+
+A power or sample size calculation is usually different each time you conduct one, and the details of the calculation strongly depend on what kind of experiment you are designing and what your end goals are.
+
+```{r}
+# Calculate power
+pwr.t.test(n = 100, 
+           d = 0.35, 
+           sig.level = 0.1, 
+           type = "two.sample", 
+           alternative = "two.sided", 
+           power = NULL)
+```
+
+```{r}
+# Calculate sample size
+pwr.t.test(n = NULL,
+           d = 0.25,
+           sig.level = 0.05,
+           type = "one.sample",
+           alternative = "greater",
+           power = 0.8)
+```
+
+Because this sample size calculation was for a one-sided test, we only need 101 subjects, not 101 in each group. As you design experiments in the future, the `pwr` package includes functions for calculating power and sample size for a variety of different tests, including ANOVA.
+
+
